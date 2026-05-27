@@ -33,10 +33,10 @@ export const verifyOtp = async ({ otp, hashedOtp, expiresAt }) => {
   return verifyOtpHash(otp, hashedOtp);
 };
 
-export const createOtpChallenge = async () => {
-  const otp = generateOtp();
+export const createOtpChallenge = async (expiresInMinutes = env.otp.expiresInMinutes, length = env.otp.length) => {
+  const otp = generateOtp(length);
   const hashedOtp = await hashOtp(otp);
-  const expiresAt = getOtpExpiry();
+  const expiresAt = getOtpExpiry(expiresInMinutes);
 
   return { otp, hashedOtp, expiresAt };
 };

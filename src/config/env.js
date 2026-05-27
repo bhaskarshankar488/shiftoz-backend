@@ -45,8 +45,13 @@ const env = Object.freeze({
   rateLimit: Object.freeze({
     authWindowMs: toNumber(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     authMax: toNumber(process.env.AUTH_RATE_LIMIT_MAX, 10),
+    strictAuthMax: toNumber(process.env.STRICT_AUTH_RATE_LIMIT_MAX, 5),
     apiWindowMs: toNumber(process.env.API_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     apiMax: toNumber(process.env.API_RATE_LIMIT_MAX, 100),
+  }),
+  security: Object.freeze({
+    sessionMaxDevices: toNumber(process.env.SESSION_MAX_DEVICES, 10),
+    suspiciousLoginLookbackDays: toNumber(process.env.SUSPICIOUS_LOGIN_LOOKBACK_DAYS, 30),
   }),
 });
 

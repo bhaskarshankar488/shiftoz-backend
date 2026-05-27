@@ -5,6 +5,7 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { verifyAccessToken } from "../utils/jwt.util.js";
 import env from "../../config/env.js";
+import { isSessionActive } from "../services/session.service.js";
 
 const getAccessTokenFromRequest = (req) => {
   const authHeader = req.headers.authorization || "";
@@ -48,10 +49,15 @@ export const authenticateUser = asyncHandler(async (req, _res, next) => {
     throw new ApiError(403, "Account is not allowed to access this resource");
   }
 
+  if (!isSessionActive(account, decoded.sessionId)) {
+    throw new ApiError(401, "Authentication session is no longer active");
+  }
+
   req.user = account;
   req.auth = {
     id: account._id,
     role: getAccountRole(account, decoded.role),
+    sessionId: decoded.sessionId,
     tokenPayload: decoded,
   };
 

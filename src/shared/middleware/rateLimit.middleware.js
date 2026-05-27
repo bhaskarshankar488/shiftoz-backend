@@ -12,6 +12,17 @@ export const authRateLimiter = rateLimit({
   },
 });
 
+export const strictAuthRateLimiter = rateLimit({
+  windowMs: env.rateLimit.authWindowMs,
+  limit: env.rateLimit.strictAuthMax,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many security-sensitive attempts. Please try again later.",
+  },
+});
+
 export const apiRateLimiter = rateLimit({
   windowMs: env.rateLimit.apiWindowMs,
   limit: env.rateLimit.apiMax,
