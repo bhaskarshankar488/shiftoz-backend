@@ -1,15 +1,15 @@
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const compression = require("compression");
-const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
-const errorMiddleware = require("./middlewares/error.middleware");
+import errorMiddleware from "./middlewares/error.middleware.js";
+
+import routes from "./routes/index.js";
 
 const app = express();
-
-const routes = require("./routes");
 
 /*
 |--------------------------------------------------------------------------
@@ -33,9 +33,10 @@ app.use(cookieParser());
 
 /*
 |--------------------------------------------------------------------------
-| Health Check Route
+| API Routes
 |--------------------------------------------------------------------------
 */
+
 app.use("/api/v1", routes);
 
 /*
@@ -46,4 +47,4 @@ app.use("/api/v1", routes);
 
 app.use(errorMiddleware);
 
-module.exports = app;
+export default app;
