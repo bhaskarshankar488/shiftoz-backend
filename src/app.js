@@ -5,7 +5,17 @@ const compression = require("compression");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 
+const errorMiddleware = require("./middlewares/error.middleware");
+
 const app = express();
+
+const routes = require("./routes");
+
+/*
+|--------------------------------------------------------------------------
+| Global Middlewares
+|--------------------------------------------------------------------------
+*/
 
 app.use(cors());
 
@@ -21,11 +31,19 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "ShiftOz Backend Running",
-  });
-});
+/*
+|--------------------------------------------------------------------------
+| Health Check Route
+|--------------------------------------------------------------------------
+*/
+app.use("/api/v1", routes);
+
+/*
+|--------------------------------------------------------------------------
+| Global Error Middleware
+|--------------------------------------------------------------------------
+*/
+
+app.use(errorMiddleware);
 
 module.exports = app;
