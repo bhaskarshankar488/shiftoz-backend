@@ -105,6 +105,19 @@ const userSchema = new mongoose.Schema(
       twoFactorRequestedAt: Date,
     },
 
+    customerAuth: {
+      otpHash: {
+        type: String,
+        select: false,
+      },
+      otpExpiresAt: Date,
+      otpRequestedAt: Date,
+      otpAttempts: {
+        type: Number,
+        default: 0,
+      },
+    },
+
     refreshTokens: [sessionSchema],
 
     lastLoginAt: Date,
