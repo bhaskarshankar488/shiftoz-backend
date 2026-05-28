@@ -14,6 +14,7 @@ npm-debug.log*
 # Build folders
 dist/
 build/
+uploads/
 
 # OS files
 .DS_Store
@@ -29,3 +30,13 @@ temp/
 
 # Coverage
 coverage/
+<<<<<<< HEAD
+
+node_modules
+.env
+uploads
+logs
+coverage
+dist
+=======
+>>>>>>> 53aa60fea65b141b915273a5c819e5dfb2bbcccf
