@@ -7,6 +7,34 @@ const addressSchema = new mongoose.Schema({
   pincode: String,
 });
 
+const adminAuthSchema = new mongoose.Schema(
+  {
+    twoFactorOtpHash: {
+      type: String,
+      select: false,
+    },
+    twoFactorOtpExpiresAt: Date,
+    twoFactorRequestedAt: Date,
+  },
+  { _id: false },
+);
+
+const customerAuthSchema = new mongoose.Schema(
+  {
+    otpHash: {
+      type: String,
+      select: false,
+    },
+    otpExpiresAt: Date,
+    otpRequestedAt: Date,
+    otpAttempts: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { _id: false },
+);
+
 const sessionSchema = new mongoose.Schema(
   {
     sessionId: {
@@ -61,7 +89,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["customer", "vendor", "admin", "super_admin", "support"],
+      enum: ["customer", "admin", "super_admin", "support"],
       default: "customer",
     },
 
@@ -96,27 +124,9 @@ const userSchema = new mongoose.Schema(
 
     lockUntil: Date,
 
-    adminAuth: {
-      twoFactorOtpHash: {
-        type: String,
-        select: false,
-      },
-      twoFactorOtpExpiresAt: Date,
-      twoFactorRequestedAt: Date,
-    },
+    adminAuth: adminAuthSchema,
 
-    customerAuth: {
-      otpHash: {
-        type: String,
-        select: false,
-      },
-      otpExpiresAt: Date,
-      otpRequestedAt: Date,
-      otpAttempts: {
-        type: Number,
-        default: 0,
-      },
-    },
+    customerAuth: customerAuthSchema,
 
     refreshTokens: [sessionSchema],
 

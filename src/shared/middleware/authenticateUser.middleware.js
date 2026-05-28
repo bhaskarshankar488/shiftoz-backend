@@ -5,7 +5,6 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { verifyAccessToken } from "../utils/jwt.util.js";
 import env from "../../config/env.js";
-import { isSessionActive } from "../services/session.service.js";
 
 const getAccessTokenFromRequest = (req) => {
   const authHeader = req.headers.authorization || "";
@@ -24,6 +23,11 @@ const getAccountModel = (role) => {
 
 const getAccountRole = (account, tokenRole) => tokenRole || account.role || USER_ROLES.VENDOR;
 
+const getAuthProjection = (role) => {
+  if (role === USER_ROLES.VENDOR) return "_id isActive vendorStatus";
+  return "_id role isBlocked";
+};
+
 export const authenticateUser = asyncHandler(async (req, _res, next) => {
   const token = getAccessTokenFromRequest(req);
 
@@ -39,7 +43,7 @@ export const authenticateUser = asyncHandler(async (req, _res, next) => {
   }
 
   const AccountModel = getAccountModel(decoded.role);
-  const account = await AccountModel.findById(accountId).select("-passwordHash");
+  const account = await AccountModel.findById(accountId).select(getAuthProjection(decoded.role));
 
   if (!account) {
     throw new ApiError(401, "Authenticated account no longer exists");
@@ -47,10 +51,6 @@ export const authenticateUser = asyncHandler(async (req, _res, next) => {
 
   if (account.isBlocked || account.isActive === false) {
     throw new ApiError(403, "Account is not allowed to access this resource");
-  }
-
-  if (!isSessionActive(account, decoded.sessionId)) {
-    throw new ApiError(401, "Authentication session is no longer active");
   }
 
   req.user = account;

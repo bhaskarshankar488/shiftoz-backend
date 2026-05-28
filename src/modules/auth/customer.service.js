@@ -157,6 +157,10 @@ export const verifyCustomerOtp = async ({ phone, otp }, reqMeta = {}) => {
 };
 
 export const logoutCustomer = async ({ customerId, sessionId, refreshToken, reqMeta = {} }) => {
+  if (!refreshToken) {
+    throw new ApiError(400, "Refresh token is required to logout");
+  }
+
   await revokeSession({
     accountId: customerId,
     role: USER_ROLES.CUSTOMER,
@@ -167,7 +171,10 @@ export const logoutCustomer = async ({ customerId, sessionId, refreshToken, reqM
 };
 
 export const getCustomerProfile = async (customerId) => {
-  const customer = await findCustomerById(customerId, "-passwordHash -refreshTokens -adminAuth -customerAuth");
+  const customer = await findCustomerById(
+    customerId,
+    "_id name email phone role profileImage addresses isVerified isPhoneVerified isEmailVerified isBlocked lastLoginAt createdAt updatedAt",
+  );
 
   if (!customer) {
     throw new ApiError(404, "Customer not found");

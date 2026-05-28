@@ -43,7 +43,7 @@ const buildAdminTokenPayload = (admin) => ({
 });
 
 export const loginAdmin = async ({ email, password }, reqMeta = {}) => {
-  const admin = await findAdminByEmail(email, "+passwordHash +adminAuth.twoFactorOtpHash");
+  const admin = await findAdminByEmail(email, "+passwordHash +adminAuth");
 
   assertAdminCanLogin(admin);
 
@@ -94,26 +94,19 @@ export const loginAdmin = async ({ email, password }, reqMeta = {}) => {
 };
 
 export const verifyAdminTwoFactor = async ({ email, otp }, reqMeta = {}) => {
-  const admin = await findAdminByEmail(email, "+adminAuth.twoFactorOtpHash +refreshTokens.tokenHash");
+  const admin = await findAdminByEmail(email, "+adminAuth +refreshTokens.tokenHash");
 
   assertAdminCanLogin(admin);
-
-  const isOtpValid = await verifyOtp({
+  const isOtpValid = await verifyOtp(
     otp,
-    hashedOtp: admin.adminAuth?.twoFactorOtpHash,
-    expiresAt: admin.adminAuth?.twoFactorOtpExpiresAt,
-  });
+    admin.adminAuth?.twoFactorOtpHash
+  );
 
-  if (!isOtpValid) {
-    await writeAuditLog({
-      accountId: admin._id,
-      accountType: ACCOUNT_TYPES.USER,
-      role: admin.role,
-      event: AUDIT_EVENTS.TWO_FACTOR_FAILED,
-      status: "failure",
-      ...reqMeta,
-    });
-    throw new ApiError(401, "Invalid or expired 2FA OTP");
+  if (
+    !admin.adminAuth?.twoFactorOtpExpiresAt ||
+    admin.adminAuth.twoFactorOtpExpiresAt < new Date()
+  ) {
+    throw new ApiError(401, "2FA OTP expired");
   }
 
   const session = await createSession({
@@ -186,7 +179,10 @@ export const logoutAdmin = async ({ adminId, role, sessionId, refreshToken = nul
 };
 
 export const getAdminProfile = async (adminId) => {
-  const admin = await findAdminById(adminId, "-passwordHash -refreshTokens -adminAuth");
+  const admin = await findAdminById(
+    adminId,
+    "_id name email phone role profileImage addresses isVerified isPhoneVerified isEmailVerified isBlocked loginAttempts lockUntil lastLoginAt createdAt updatedAt",
+  );
 
   if (!admin) {
     throw new ApiError(404, "Admin not found");

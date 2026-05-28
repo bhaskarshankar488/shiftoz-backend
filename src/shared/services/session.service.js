@@ -184,6 +184,32 @@ export const revokeSession = async ({ accountId, role, sessionId, refreshToken =
   const accountType = getAccountTypeByRole(role);
   const AccountModel = getAccountModelByType(accountType);
 
+  if (refreshToken) {
+    const decoded = verifyRefreshToken(refreshToken);
+    const decodedAccountId = decoded.id || decoded._id || decoded.userId || decoded.sub;
+
+    if (
+      decodedAccountId?.toString() !== accountId?.toString() ||
+      decoded.role !== role ||
+      decoded.sessionId !== sessionId
+    ) {
+      throw new ApiError(401, "Refresh token does not match the authenticated session");
+    }
+
+    const account = await AccountModel.findById(accountId).select("+refreshTokens.tokenHash");
+    const session = (account?.refreshTokens || []).find((item) => item.sessionId === sessionId);
+
+    if (!session || session.revokedAt || new Date(session.expiresAt).getTime() <= Date.now()) {
+      throw new ApiError(401, "Refresh token session is no longer valid");
+    }
+
+    const isTokenValid = session.tokenHash && await bcrypt.compare(refreshToken, session.tokenHash);
+
+    if (!isTokenValid) {
+      throw new ApiError(401, "Refresh token does not match the authenticated session");
+    }
+  }
+
   await AccountModel.findByIdAndUpdate(accountId, {
     $set: {
       "refreshTokens.$[session].revokedAt": new Date(),
