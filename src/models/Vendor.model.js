@@ -196,9 +196,6 @@ const vendorSchema = new mongoose.Schema(
 vendorSchema.index({ services: 1 });
 vendorSchema.index({ citiesServed: 1 });
 vendorSchema.index({ rating: -1 });
-vendorSchema.index({ email: 1 });
-vendorSchema.index({ phone: 1 });
-vendorSchema.index({ vendorStatus: 1 });
 vendorSchema.index({ lockUntil: 1 });
 vendorSchema.index({ "refreshTokens.sessionId": 1 });
 
